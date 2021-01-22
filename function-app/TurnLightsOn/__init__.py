@@ -11,4 +11,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Turning lights on')
 
     api.call_ifttt_on()
-    api.call_iot_central('TurnOn', {})
+    api.call_iot_hub('TurnOn', {})
+
+    return func.HttpResponse("OK", status_code=200)

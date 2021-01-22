@@ -1,24 +1,28 @@
-import logging
+import os
+import sys
+sys.path.append(os.path.abspath(""))
 
+import logging
 import azure.functions as func
+
+from ..shared import api
 
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    name = req.params.get('name')
-    if not name:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            name = req_body.get('name')
+    logging.info(req.params)
 
-    if name:
-        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
+    style = req.params.get('style')
+    hex_color = req.params.get('hexcolor')
+
+    if style is not None:
+        req_body = {'ColorType':'Style','Color':{'Style':style}}
+    elif hex_color is not None:
+        req_body = {'ColorType':'HexColor','Color':{'HexColor':hex_color}}
     else:
-        return func.HttpResponse(
-             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
-             status_code=200
-        )
+        req_body = req.get_json()
+
+    api.call_iot_hub('SetColor', req_body)
+    
+    return func.HttpResponse("OK", status_code=200)
